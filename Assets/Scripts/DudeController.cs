@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DudeController : MonoBehaviour
 {
@@ -15,7 +13,7 @@ public class DudeController : MonoBehaviour
         , nextTimeEvent = 0f
         , minTimeEvent = 3f
         , maxTimeEvent = 10f;
-    [SerializeField] private int 
+    public int
           love = 50
         , health = 100
         , attraction = 100;
@@ -24,9 +22,9 @@ public class DudeController : MonoBehaviour
 
 
 
-    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING };
+    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ESCAPING };
     [SerializeField] private STATE PlayerState = STATE.WANDERING;
-    
+
     void Awake()
     {
         rb = gameObject.GetComponent<Rigidbody>();
@@ -39,7 +37,7 @@ public class DudeController : MonoBehaviour
 
     void Update()
     {
-        
+
     }
 
     private void FixedUpdate()
@@ -53,8 +51,21 @@ public class DudeController : MonoBehaviour
         if (PlayerState == STATE.WANDERING)
         {
             Scan();
+            Walk();
+        } else if (PlayerState == STATE.FOLLOWING)
+        {
+            Follow();
+        } else if (PlayerState == STATE.FIGHTING)
+        {
+            Fight();
+        } else if (PlayerState == STATE.DANCING)
+        {
+            Dance();
+        } else if (PlayerState == STATE.ESCAPING)
+        {
+            Escape();
         }
-        Walk();
+
     }
 
     private void Walk()
@@ -91,12 +102,40 @@ public class DudeController : MonoBehaviour
 
     private void Scan()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 3f, LayerMask.GetMask("humans"));
-        int i = 0;
-        while (i < hitColliders.Length)
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 25f, LayerMask.GetMask("humans"));
+        
+        if (hitColliders.Length > 1)
         {
-            hitColliders[i].SendMessage("AddDamage");
-            i++;
+            int i = 0;
+            while (i < hitColliders.Length)
+            {
+                if (hitColliders[i].transform != transform)
+                {
+                    Debug.Log("Other Valio has " + hitColliders[i].gameObject.GetComponent<DudeController>().love + " LOVE for me");
+                }
+                i++;
+            }
         }
     }
+
+    private void Follow()
+    {
+        /*transform.LookAt()*/
+    }
+
+    private void Fight()
+    {
+
+    }
+
+    private void Dance()
+    {
+
+    }
+
+    private void Escape()
+    {
+
+    }
+
 }
