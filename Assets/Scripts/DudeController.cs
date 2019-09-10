@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class DudeController : MonoBehaviour
 {
@@ -23,13 +24,12 @@ public class DudeController : MonoBehaviour
         , maxLove = 20;
 
     private Rigidbody rb;
-    private GameObject targetDude;
-    private DudeController targetDudeController;
+    private GameObject targetDude; // DELETE
+    private DudeController targetDudeController;// DELETE
     private Animator animator;
+    private Vector3 friendAreaCenter;
 
-
-
-    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ATTACKING, ESCAPING };
+    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ATTACKING, ESCAPING, DYING };
     [SerializeField] private STATE PlayerState = STATE.WANDERING;
 
     void Awake()
@@ -40,24 +40,12 @@ public class DudeController : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("I am a Dude");
         this.love = Random.Range(40, 60);
         ReturnToWandering();
     }
 
-    void Update()
-    {
-
-    }
-
     private void FixedUpdate()
     {
-        // DIFFERENT BEHAVIOUR BASED ON STATE
-        // if WANDERING - SCAN
-        // IF RELAXING - NOTHING (DELAY WILL EXIT IT)
-        // IF FOLLOWING - NOTHING ( EVENT WILL EXIT IT)
-        // IF DANCING - UPDATE STATS
-        // IF FIGHTING - UPDATE STATS
 
         Walk();
         Scan();
@@ -87,6 +75,10 @@ public class DudeController : MonoBehaviour
         {
             Escape();
         }
+        else if (PlayerState == STATE.DYING)
+        {
+            Die();
+        }
 
     }
 
@@ -104,7 +96,6 @@ public class DudeController : MonoBehaviour
     {
         nextTimeEvent = Time.time + Random.Range(minTimeEvent, maxTimeEvent);
         int draw = Random.Range(1, 8);
-        Debug.Log("DRAW:" + draw);
         if (draw < 5) // walk straight
         {
             currentRotationSpeed = 0;
@@ -127,39 +118,70 @@ public class DudeController : MonoBehaviour
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attractionDistance, LayerMask.GetMask("humans"));
         
         if (hitColliders.Length > 1)
-        {
-            int i = 0;
-            int totalLove = 0;
-            while (i < hitColliders.Length)
+        { 
+            // YOU ARE BAD
+            if (this.love < maxLove * .5f)
             {
-                if (hitColliders[i].transform != transform)
+                // detect first good guy and attack him
+                // if you reach them - hit
+            }
+            // YOU ARE GOOD
+            else
+            {
+                int i = 0;
+                int totalLove = 0;
+                friendAreaCenter = Vector3.zero;
+                while (i < hitColliders.Length)
                 {
-                    targetDude = hitColliders[i].gameObject;
-                    targetDudeController = targetDude.GetComponent<DudeController>();
-                    //Debug.Log(gameObject.name + " HAS DETECTED " + hitColliders[i].gameObject.GetComponent<DudeController>().love + " LOVE for me");
+                    if (hitColliders[i].transform != transform)
+                    {
+                        DudeController thisDudeController = hitColliders[i].GetComponent<DudeController>();
 
-                    if (this.love >= 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
-                    {
-                        this.PlayerState = STATE.FOLLOWING;
-                    }
-                    else if (this.love >= 50 && targetDudeController.love < 50)
-                    {
-                        this.PlayerState = STATE.ESCAPING;
-                    }
-                    else if (this.love < 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
-                    {
-                        this.PlayerState = STATE.ATTACKING;
-                    }
-                    else if (this.love < 50 && targetDudeController.love < 50)
-                    {
-                        //
-                    }
+                        if (thisDudeController.love < maxLove *.5)
+                        {
+                            this.PlayerState = STATE.ESCAPING;
+                            return;
+                        }
 
-                    totalLove += hitColliders[i].gameObject.GetComponent<DudeController>().love;
+                        totalLove += thisDudeController.love;
+                        friendAreaCenter += hitColliders[i].transform.position;
+
+                        
+
+                        /*
+                        1. calculate attaction point - middle of the gang
+                        2. send the array to the state
+                         */
+
+
+                        /*targetDude = hitColliders[i].gameObject;
+                        targetDudeController = targetDude.GetComponent<DudeController>();
+
+                        if (this.love >= 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
+                        {
+                            this.PlayerState = STATE.FOLLOWING;
+                        }
+                        else if (this.love >= 50 && targetDudeController.love < 50)
+                        {
+                            this.PlayerState = STATE.ESCAPING;
+                        }
+                        else if (this.love < 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
+                        {
+                            this.PlayerState = STATE.ATTACKING;
+                        }
+                        else if (this.love < 50 && targetDudeController.love < 50)
+                        {
+                            //
+                        }*/
+
+
+                    }
+                    i++;
+                    friendAreaCenter = friendAreaCenter / i; // calculate the middle point
+                    UpdateLoveAttribute(i, totalLove);
                 }
-                i++;
-                UpdateLoveAttribute(i, totalLove);
-            } 
+            }
+            
         }
         else // RETURN TO WANDERING
         {
@@ -221,6 +243,14 @@ public class DudeController : MonoBehaviour
     }
 
     private void Escape()
+    {
+        transform.LookAt(transform.position - targetDude.transform.position);
+        rb.angularVelocity = Vector3.zero;
+        currentRotationSpeed = 0;
+        currentSpeed = minSpeed;
+    }
+
+    private void Die()
     {
         transform.LookAt(transform.position - targetDude.transform.position);
         rb.angularVelocity = Vector3.zero;
