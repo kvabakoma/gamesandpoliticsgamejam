@@ -7,32 +7,42 @@ public class DudeController : MonoBehaviour
     private float
           minSpeed = 3f
         , maxSpeed = 10f
+        , loveSpeed = 5f
         , currentSpeed = 3f
         , minMaxRotationSpeed = 5f
         , currentRotationSpeed = 1f
         , nextTimeEvent = 0f
         , minTimeEvent = 3f
-        , maxTimeEvent = 10f;
+        , maxTimeEvent = 10f
+        , attractionDistance = 15f
+        , danceDistance = 5f
+        , fightDistance = 1f;
     public int
           love = 50
-        , health = 100
-        , attraction = 100;
+        , minLove = 0
+        , maxLove = 20;
 
     private Rigidbody rb;
+    private GameObject targetDude;
+    private DudeController targetDudeController;
+    private Animator animator;
 
 
 
-    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ESCAPING };
+    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ATTACKING, ESCAPING };
     [SerializeField] private STATE PlayerState = STATE.WANDERING;
 
     void Awake()
     {
         rb = gameObject.GetComponent<Rigidbody>();
+        animator = gameObject.GetComponent<Animator>();
     }
 
     void Start()
     {
         Debug.Log("I am a Dude");
+        this.love = Random.Range(40, 60);
+        ReturnToWandering();
     }
 
     void Update()
@@ -48,20 +58,32 @@ public class DudeController : MonoBehaviour
         // IF FOLLOWING - NOTHING ( EVENT WILL EXIT IT)
         // IF DANCING - UPDATE STATS
         // IF FIGHTING - UPDATE STATS
+
+        Walk();
+        Scan();
+
         if (PlayerState == STATE.WANDERING)
-        {
-            Scan();
-            Walk();
-        } else if (PlayerState == STATE.FOLLOWING)
+        {            
+            Rotate();
+            if (Time.time > nextTimeEvent) ChangeWalkingMode();
+        }
+        else if (PlayerState == STATE.FOLLOWING)
         {
             Follow();
-        } else if (PlayerState == STATE.FIGHTING)
+        }
+        else if (PlayerState == STATE.ATTACKING)
+        {
+            Attack();
+        }
+        else if (PlayerState == STATE.FIGHTING)
         {
             Fight();
-        } else if (PlayerState == STATE.DANCING)
+        }
+        else if (PlayerState == STATE.DANCING)
         {
             Dance();
-        } else if (PlayerState == STATE.ESCAPING)
+        }
+        else if (PlayerState == STATE.ESCAPING)
         {
             Escape();
         }
@@ -70,12 +92,12 @@ public class DudeController : MonoBehaviour
 
     private void Walk()
     {
-
         rb.AddRelativeForce(Vector3.forward * currentSpeed);
+    }
+
+    private void Rotate()
+    {
         transform.Rotate(Vector3.up * currentRotationSpeed);
-
-        if (Time.time > nextTimeEvent) ChangeWalkingMode();
-
     }
 
     private void ChangeWalkingMode()
@@ -102,40 +124,122 @@ public class DudeController : MonoBehaviour
 
     private void Scan()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 25f, LayerMask.GetMask("humans"));
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, attractionDistance, LayerMask.GetMask("humans"));
         
         if (hitColliders.Length > 1)
         {
             int i = 0;
+            int totalLove = 0;
             while (i < hitColliders.Length)
             {
                 if (hitColliders[i].transform != transform)
                 {
-                    Debug.Log("Other Valio has " + hitColliders[i].gameObject.GetComponent<DudeController>().love + " LOVE for me");
+                    targetDude = hitColliders[i].gameObject;
+                    targetDudeController = targetDude.GetComponent<DudeController>();
+                    //Debug.Log(gameObject.name + " HAS DETECTED " + hitColliders[i].gameObject.GetComponent<DudeController>().love + " LOVE for me");
+
+                    if (this.love >= 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
+                    {
+                        this.PlayerState = STATE.FOLLOWING;
+                    }
+                    else if (this.love >= 50 && targetDudeController.love < 50)
+                    {
+                        this.PlayerState = STATE.ESCAPING;
+                    }
+                    else if (this.love < 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
+                    {
+                        this.PlayerState = STATE.ATTACKING;
+                    }
+                    else if (this.love < 50 && targetDudeController.love < 50)
+                    {
+                        //
+                    }
+
+                    totalLove += hitColliders[i].gameObject.GetComponent<DudeController>().love;
                 }
                 i++;
-            }
+                UpdateLoveAttribute(i, totalLove);
+            } 
+        }
+        else // RETURN TO WANDERING
+        {
+            if (this.PlayerState != STATE.WANDERING) ReturnToWandering();
         }
     }
 
+
+    /*transform.LookAt(targetDude.transform);*/
+    // if I am good and you are good - follow
+    // if I am good and you are bad - run
+    // if I am bad nad you are good - attack
+    // if I am bad and you are bad - avoid
+
     private void Follow()
     {
-        /*transform.LookAt()*/
+        Debug.Log(this.name + " IN FOLLOW STATE " + targetDudeController.name);
+        transform.LookAt(targetDude.transform);
+        rb.angularVelocity = Vector3.zero;
+        currentSpeed = loveSpeed;
+        currentRotationSpeed = 0;
+
+        if (Vector3.Distance(transform.position,targetDude.transform.position) < danceDistance && this.love >=50 && targetDudeController.love >=50)
+        {
+            this.PlayerState = STATE.DANCING;
+            animator.SetTrigger("hiphop");
+        }
+    }
+
+    private void Attack()
+    {
+        Debug.Log(this.name + " IN FIGHT STATE " + targetDudeController.name);
+        transform.LookAt(targetDude.transform);
+        rb.angularVelocity = Vector3.zero;
+        rb.AddRelativeForce(Vector3.forward * .2f, ForceMode.Impulse);
+        currentRotationSpeed = 0;
+
+        if (Vector3.Distance(transform.position, targetDude.transform.position) < fightDistance)
+        {
+            animator.SetTrigger("boxing");
+            this.PlayerState = STATE.FIGHTING;
+        }
     }
 
     private void Fight()
     {
-
+        currentSpeed = minSpeed;
+        // fight until something happens
     }
 
     private void Dance()
     {
-
+        // IF YOU LOSE YOUR DANCING PARTNER - EXIT
+        // IF AN ENEMY ENTERS - RUN AWAY
+        if (Vector3.Distance(transform.position, targetDude.transform.position) > danceDistance)
+        {
+            ReturnToWandering();
+        }
     }
 
     private void Escape()
     {
+        transform.LookAt(transform.position - targetDude.transform.position);
+        rb.angularVelocity = Vector3.zero;
+        currentRotationSpeed = 0;
+        currentSpeed = minSpeed;
+    }
 
+    private void UpdateLoveAttribute(int n, int totalLove)
+    {
+        if (totalLove / n < 50) this.love--;
+        else this.love++;
+        Mathf.Clamp(this.love, 0, 100);
+    }
+
+    private void ReturnToWandering()
+    {
+        this.PlayerState = STATE.WANDERING;
+        if (this.love < 50) animator.SetTrigger("walking");
+        if (this.love >= 50) animator.SetTrigger("happywalk");
     }
 
 }
