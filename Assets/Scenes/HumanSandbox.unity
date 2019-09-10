@@ -1706,8 +1706,8 @@ MonoBehaviour:
   danceDistance: 5
   fightDistance: 1
   love: 50
-  health: 100
-  attraction: 100
+  minLove: 0
+  maxLove: 20
   PlayerState: 0
 --- !u!1001 &139487356
 PrefabInstance:
@@ -2065,8 +2065,8 @@ MonoBehaviour:
   danceDistance: 5
   fightDistance: 1
   love: 50
-  health: 100
-  attraction: 100
+  minLove: 0
+  maxLove: 20
   PlayerState: 0
 --- !u!54 &477727371
 Rigidbody:
@@ -2215,8 +2215,8 @@ MonoBehaviour:
   danceDistance: 5
   fightDistance: 1
   love: 50
-  health: 100
-  attraction: 100
+  minLove: 0
+  maxLove: 20
   PlayerState: 0
 --- !u!136 &499901037
 CapsuleCollider:
@@ -3157,8 +3157,8 @@ MonoBehaviour:
   danceDistance: 5
   fightDistance: 1
   love: 50
-  health: 100
-  attraction: 100
+  minLove: 0
+  maxLove: 20
   PlayerState: 0
 --- !u!136 &988459014
 CapsuleCollider:
@@ -3281,7 +3281,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1064496096}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 436275a13d4459746955fc6db5953473, type: 3}
   m_Name: 
@@ -3594,8 +3594,8 @@ MonoBehaviour:
   danceDistance: 5
   fightDistance: 1
   love: 50
-  health: 100
-  attraction: 100
+  minLove: 0
+  maxLove: 20
   PlayerState: 0
 --- !u!136 &1170658521
 CapsuleCollider:
@@ -5107,8 +5107,8 @@ MonoBehaviour:
   danceDistance: 5
   fightDistance: 1
   love: 50
-  health: 100
-  attraction: 100
+  minLove: 0
+  maxLove: 20
   PlayerState: 0
 --- !u!136 &1491274600
 CapsuleCollider:
