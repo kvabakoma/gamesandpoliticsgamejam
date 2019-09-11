@@ -22,6 +22,7 @@ public class DudeController : MonoBehaviour
           love = 50
         , minLove = 0
         , maxLove = 20;
+    public bool badGuy;
 
     private Rigidbody rb;
     private GameObject targetDude; // DELETE
@@ -29,7 +30,7 @@ public class DudeController : MonoBehaviour
     private Animator animator;
     private Vector3 friendAreaCenter, dangerPosition;
 
-    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ATTACKING, ESCAPING, DYING };
+    private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ATTACKING, ESCAPING, DYING, CHANGED };
     [SerializeField] private STATE PlayerState = STATE.WANDERING;
 
     void Awake()
@@ -40,17 +41,22 @@ public class DudeController : MonoBehaviour
 
     void Start()
     {
-        this.love = 12;
-        if (this.name == "Valio") this.love = minLove;
+        if (badGuy) this.love = Random.Range(minLove, maxLove / 2 - 1);
+        else this.love = Random.Range(maxLove / 2 + 1, maxLove);
         if (this.love < maxLove *.5f) angryIcon.SetActive(true);
         ReturnToWandering();
+    }
+
+    private void Update()
+    {
+        GetMouseInput();
     }
 
     private void FixedUpdate()
     {
 
         Walk();
-        Scan();
+        Scan();        
 
         if (PlayerState == STATE.WANDERING)
         {            
@@ -117,6 +123,7 @@ public class DudeController : MonoBehaviour
 
     private void Scan()
     {
+        if (this.PlayerState == STATE.CHANGED) return;
 
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attractionDistance, LayerMask.GetMask("humans"));
 
@@ -218,7 +225,7 @@ public class DudeController : MonoBehaviour
         currentSpeed = maxSpeed;
         currentRotationSpeed = 0;
 
-        if (Vector3.Distance(transform.position, targetDude.transform.position) < fightDistance)
+        if (Vector3.Distance(transform.position, targetDude.transform.position) < fightDistance && this.PlayerState != STATE.CHANGED)
         {
             animator.SetTrigger("boxing");
             this.PlayerState = STATE.FIGHTING;
@@ -253,6 +260,16 @@ public class DudeController : MonoBehaviour
         currentSpeed = minSpeed;*/
     }
 
+    public void Change()
+    {
+        this.PlayerState = STATE.CHANGED;
+        animator.SetTrigger("walking");
+        currentSpeed = maxSpeed;
+        currentRotationSpeed = 0;
+        transform.Rotate(Vector3.up * 180, Space.Self);
+        Invoke("ReturnToWandering", 3f);
+    }
+
     private void UpdateLoveAttribute(int n)
     {
         this.love += n;
@@ -264,6 +281,68 @@ public class DudeController : MonoBehaviour
         this.PlayerState = STATE.WANDERING;
         if (this.love < maxLove * .5f) animator.SetTrigger("walking");
         if (this.love >= maxLove * .5f) animator.SetTrigger("happywalk");
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        //Check for a match with the specified name on any GameObject that collides with your GameObject
+        if (collision.gameObject.name == "SeaWall")
+        {
+            transform.Rotate(Vector3.up * 180);
+        } 
+
+    }
+
+    private void GetMouseInput()
+    {
+
+
+        RaycastHit hitInfo = new RaycastHit();
+        bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo, 100f, LayerMask.GetMask("humans"));
+        if (hit)
+        {
+            hitInfo.transform.GetChild(4).gameObject.SetActive(true);
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                Debug.Log("Hit " + hitInfo.transform.gameObject.name);
+                /*hitInfo.transform.Rotate(0, 180, 0, Space.Self);*/
+                hitInfo.transform.gameObject.GetComponent<DudeController>().Change();
+            }
+        } 
+        else
+        {
+            foreach (Transform child in transform.parent.transform)
+            {
+                child.transform.GetChild(4).gameObject.SetActive(false);
+            }
+        }
+
+
+        /*
+         * 
+             if (Input.GetMouseButtonDown(0))
+             {
+                 Debug.Log("Mouse is down");
+
+                 RaycastHit hitInfo = new RaycastHit();
+                 bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
+                 if (hit) 
+                 {
+                     Debug.Log("Hit " + hitInfo.transform.gameObject.name);
+                     if (hitInfo.transform.gameObject.tag == "Construction")
+                     {
+                         Debug.Log ("It's working!");
+                     } else {
+                         Debug.Log ("nopz");
+                     }
+                 } else {
+                     Debug.Log("No hit");
+                 }
+                 Debug.Log("Mouse is down");
+             } 
+
+         */
     }
 
 }
