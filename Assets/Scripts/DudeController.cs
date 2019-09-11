@@ -26,7 +26,6 @@ public class DudeController : MonoBehaviour
     private Rigidbody rb;
     private GameObject targetDude; // DELETE
     [SerializeField] private GameObject angryIcon;
-    private DudeController targetDudeController;// DELETE
     private Animator animator;
     private Vector3 friendAreaCenter, dangerPosition;
 
@@ -78,10 +77,10 @@ public class DudeController : MonoBehaviour
         {
             Escape();
         }
-        else if (PlayerState == STATE.DYING)
+        /*else if (PlayerState == STATE.DYING)
         {
             Die();
-        }
+        }*/
 
     }
 
@@ -144,7 +143,7 @@ public class DudeController : MonoBehaviour
             // YOU ARE GOOD
             else 
             {
-                if (this.PlayerState == STATE.ESCAPING) return;
+                if (this.PlayerState == STATE.ESCAPING || this.PlayerState == STATE.DYING) return;
                 int i = 0;
                 friendAreaCenter = Vector3.zero;
 
@@ -216,6 +215,7 @@ public class DudeController : MonoBehaviour
         transform.LookAt(targetDude.transform);
         rb.angularVelocity = Vector3.zero;
         rb.AddRelativeForce(Vector3.forward * .2f, ForceMode.Impulse);
+        currentSpeed = maxSpeed;
         currentRotationSpeed = 0;
 
         if (Vector3.Distance(transform.position, targetDude.transform.position) < fightDistance)
@@ -228,6 +228,8 @@ public class DudeController : MonoBehaviour
     private void Fight()
     {
         currentSpeed = minSpeed;
+        targetDude.GetComponent<DudeController>().Die();
+        this.PlayerState = STATE.WANDERING;
         // fight until something happens
     }
 
@@ -239,8 +241,12 @@ public class DudeController : MonoBehaviour
         currentSpeed = maxSpeed;
     }
 
-    private void Die()
+    public void Die()
     {
+        this.PlayerState = STATE.DYING;
+        Debug.Log("I died" + name);
+        animator.SetTrigger("knockedout");
+        Invoke("ReturnToWandering", 5f);
         /*transform.LookAt(transform.position - targetDude.transform.position);
         rb.angularVelocity = Vector3.zero;
         currentRotationSpeed = 0;
