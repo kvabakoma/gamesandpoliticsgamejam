@@ -12,18 +12,26 @@ public class GameController : MonoBehaviour
     [SerializeField]
     int NumberOfPlayers;
 
+    [SerializeField]
+    private Texture2D[] textures;
+
+    private int shirtId;
+
     // Start is called before the first frame update
     void Start()
     {
         DudesList = new List<GameObject>();
-
-
+        shirtId = 0;
         SpanwNewDude();
     }
 
     private void SpanwNewDude()
     {
-        DudesList.Add(Instantiate(DudePrefab, new Vector3(Random.Range(1, 3), 0, Random.Range(-3, 3)), Quaternion.identity));
+        GameObject Dude = Instantiate(DudePrefab, new Vector3(Random.Range(1, 3), 0, Random.Range(-3, 3)), Quaternion.identity);
+        shirtId++;
+        if (shirtId > 9) shirtId = 0;
+        Dude.transform.GetChild(0).GetComponent<Renderer>().material.SetTexture("_MainTex", textures[shirtId]);
+        DudesList.Add(Dude);
 
         if (DudesList.Count < NumberOfPlayers) Invoke("SpanwNewDude", 10);
     }
