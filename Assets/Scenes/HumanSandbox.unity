@@ -1958,6 +1958,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Valio (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2036,6 +2041,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valio (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -2153,6 +2163,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valio (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -2323,6 +2338,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valio (11)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -2497,7 +2517,7 @@ GameObject:
   - component: {fileID: 641441662}
   - component: {fileID: 641441661}
   m_Layer: 0
-  m_Name: Center
+  m_Name: CameraContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2754,6 +2774,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valio (10)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -3125,6 +3150,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Valio (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -3368,6 +3398,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valio (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -4554,6 +4589,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb7b3fb16c8796745af4a785ad77117b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DudePrefab: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+    type: 3}
+  DudesList: []
+  NumberOfPlayers: 20
 --- !u!1001 &1802897802
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4569,7 +4608,7 @@ PrefabInstance:
     - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -4650,6 +4689,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Valio (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -4728,6 +4772,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valio (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -4808,6 +4857,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Valio (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -4886,6 +4940,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valio (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
@@ -4969,7 +5028,7 @@ PrefabInstance:
     - target: {fileID: 5511543334666558404, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8802204858606037463, guid: 25852c54131560145b56395434cdcca1,
         type: 3}
