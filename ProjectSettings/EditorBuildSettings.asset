@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/HumanSandbox.unity
+    guid: 1ed83de4641f83a4bae8e0b81afd41d4
   m_configObjects: {}

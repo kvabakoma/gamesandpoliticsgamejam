@@ -43,7 +43,7 @@ public class DudeController : MonoBehaviour
     {
         if (badGuy) this.love = Random.Range(minLove, maxLove / 2 - 1);
         else this.love = Random.Range(maxLove / 2 + 1, maxLove);
-        if (this.love < maxLove *.5f) angryIcon.SetActive(true);
+        if (this.badGuy) angryIcon.SetActive(true);
         ReturnToWandering();
     }
 
@@ -130,9 +130,9 @@ public class DudeController : MonoBehaviour
         if (hitColliders.Length > 1)
         { 
             // YOU ARE BAD
-            if (this.love < maxLove * .5f)
+            if (this.badGuy)
             {
-                if (this.PlayerState != STATE.ATTACKING && this.PlayerState != STATE.FIGHTING)
+                if (this.PlayerState != STATE.ATTACKING /*&& this.PlayerState != STATE.FIGHTING*/)
                 {
                     int v = 0;
                     while (v < hitColliders.Length)
@@ -160,7 +160,7 @@ public class DudeController : MonoBehaviour
                     {
                         DudeController thisDudeController = hitColliders[i].GetComponent<DudeController>();
 
-                        if (thisDudeController.love < maxLove *.5 && this.PlayerState != STATE.ESCAPING)
+                        if (thisDudeController.badGuy && this.PlayerState != STATE.ESCAPING)
                         {
                             dangerPosition = hitColliders[i].gameObject.transform.position;
                             animator.SetTrigger("walking");
@@ -181,6 +181,7 @@ public class DudeController : MonoBehaviour
                 // ako ne si v pravilen state - otivai
                 if (this.PlayerState != STATE.FOLLOWING && this.PlayerState != STATE.DANCING)
                 {
+                    Debug.Log("IN START FOLLOWING");
                     this.PlayerState = STATE.FOLLOWING;
                 }
                 UpdateLoveAttribute(1);
@@ -237,11 +238,13 @@ public class DudeController : MonoBehaviour
         currentSpeed = minSpeed;
         targetDude.GetComponent<DudeController>().Die();
         this.PlayerState = STATE.WANDERING;
+        ReturnToWandering();
         // fight until something happens
     }
 
     private void Escape()
     {
+        UpdateLoveAttribute(-1);
         rb.angularVelocity = Vector3.zero;
         currentSpeed = 0;
         currentRotationSpeed = 0;
@@ -250,6 +253,7 @@ public class DudeController : MonoBehaviour
 
     public void Die()
     {
+        UpdateLoveAttribute(-1);
         this.PlayerState = STATE.DYING;
         Debug.Log("I died" + name);
         animator.SetTrigger("knockedout");
@@ -266,21 +270,23 @@ public class DudeController : MonoBehaviour
         animator.SetTrigger("walking");
         currentSpeed = maxSpeed;
         currentRotationSpeed = 0;
-        transform.Rotate(Vector3.up * 180, Space.Self);
-        Invoke("ReturnToWandering", 3f);
+        /*transform.Rotate(Vector3.up * 180, Space.Self);*/
+        Vector3 tempV = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y + 90, transform.eulerAngles.z);
+        transform.rotation = Quaternion.Euler(tempV);
+        Invoke("ReturnToWandering", 2f);
     }
 
     private void UpdateLoveAttribute(int n)
     {
         this.love += n;
-        this.love = Mathf.Clamp(this.love, 0, 100);
+        this.love = Mathf.Clamp(this.love, 0, maxLove);
     }
 
     private void ReturnToWandering()
     {
         this.PlayerState = STATE.WANDERING;
-        if (this.love < maxLove * .5f) animator.SetTrigger("walking");
-        if (this.love >= maxLove * .5f) animator.SetTrigger("happywalk");
+        if (this.badGuy) animator.SetTrigger("walking");
+        else animator.SetTrigger("happywalk");
     }
 
     void OnCollisionEnter(Collision collision)
