@@ -25,9 +25,10 @@ public class DudeController : MonoBehaviour
 
     private Rigidbody rb;
     private GameObject targetDude; // DELETE
+    [SerializeField] private GameObject angryIcon;
     private DudeController targetDudeController;// DELETE
     private Animator animator;
-    private Vector3 friendAreaCenter;
+    private Vector3 friendAreaCenter, dangerPosition;
 
     private enum STATE { WANDERING, FOLLOWING, DANCING, FIGHTING, ATTACKING, ESCAPING, DYING };
     [SerializeField] private STATE PlayerState = STATE.WANDERING;
@@ -40,7 +41,9 @@ public class DudeController : MonoBehaviour
 
     void Start()
     {
-        this.love = Random.Range(40, 60);
+        this.love = 12;
+        if (this.name == "Valio") this.love = minLove;
+        if (this.love < maxLove *.5f) angryIcon.SetActive(true);
         ReturnToWandering();
     }
 
@@ -115,105 +118,101 @@ public class DudeController : MonoBehaviour
 
     private void Scan()
     {
+
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attractionDistance, LayerMask.GetMask("humans"));
-        
+
         if (hitColliders.Length > 1)
         { 
             // YOU ARE BAD
             if (this.love < maxLove * .5f)
             {
-                // detect first good guy and attack him
-                // if you reach them - hit
+                if (this.PlayerState != STATE.ATTACKING && this.PlayerState != STATE.FIGHTING)
+                {
+                    int v = 0;
+                    while (v < hitColliders.Length)
+                    {
+                        if (hitColliders[v].transform != transform)
+                        {
+                            targetDude = hitColliders[v].gameObject;
+                            this.PlayerState = STATE.ATTACKING;
+                            return;
+                        }
+                        v++;
+                    }                    
+                }
             }
             // YOU ARE GOOD
-            else
+            else 
             {
+                if (this.PlayerState == STATE.ESCAPING) return;
                 int i = 0;
-                int totalLove = 0;
                 friendAreaCenter = Vector3.zero;
+
                 while (i < hitColliders.Length)
                 {
                     if (hitColliders[i].transform != transform)
                     {
                         DudeController thisDudeController = hitColliders[i].GetComponent<DudeController>();
 
-                        if (thisDudeController.love < maxLove *.5)
+                        if (thisDudeController.love < maxLove *.5 && this.PlayerState != STATE.ESCAPING)
                         {
+                            dangerPosition = hitColliders[i].gameObject.transform.position;
+                            animator.SetTrigger("walking");
+                            //transform.LookAt(transform.position - dangerPosition);
+                            transform.LookAt(transform.position - friendAreaCenter);
+                            rb.AddRelativeForce(Vector3.forward * minSpeed, ForceMode.Impulse);
                             this.PlayerState = STATE.ESCAPING;
+                            Invoke("ReturnToWandering", 3);
                             return;
                         }
 
-                        totalLove += thisDudeController.love;
                         friendAreaCenter += hitColliders[i].transform.position;
-
-                        
-
-                        /*
-                        1. calculate attaction point - middle of the gang
-                        2. send the array to the state
-                         */
-
-
-                        /*targetDude = hitColliders[i].gameObject;
-                        targetDudeController = targetDude.GetComponent<DudeController>();
-
-                        if (this.love >= 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
-                        {
-                            this.PlayerState = STATE.FOLLOWING;
-                        }
-                        else if (this.love >= 50 && targetDudeController.love < 50)
-                        {
-                            this.PlayerState = STATE.ESCAPING;
-                        }
-                        else if (this.love < 50 && targetDudeController.love >= 50 && this.PlayerState == STATE.WANDERING)
-                        {
-                            this.PlayerState = STATE.ATTACKING;
-                        }
-                        else if (this.love < 50 && targetDudeController.love < 50)
-                        {
-                            //
-                        }*/
-
-
                     }
                     i++;
                     friendAreaCenter = friendAreaCenter / i; // calculate the middle point
-                    UpdateLoveAttribute(i, totalLove);
                 }
+
+                // ako ne si v pravilen state - otivai
+                if (this.PlayerState != STATE.FOLLOWING && this.PlayerState != STATE.DANCING)
+                {
+                    this.PlayerState = STATE.FOLLOWING;
+                }
+                UpdateLoveAttribute(1);
             }
             
         }
-        else // RETURN TO WANDERING
+        else if (this.PlayerState != STATE.ESCAPING) // RETURN TO WANDERING
         {
             if (this.PlayerState != STATE.WANDERING) ReturnToWandering();
         }
     }
 
-
-    /*transform.LookAt(targetDude.transform);*/
-    // if I am good and you are good - follow
-    // if I am good and you are bad - run
-    // if I am bad nad you are good - attack
-    // if I am bad and you are bad - avoid
-
     private void Follow()
     {
-        Debug.Log(this.name + " IN FOLLOW STATE " + targetDudeController.name);
-        transform.LookAt(targetDude.transform);
+        transform.LookAt(friendAreaCenter);
         rb.angularVelocity = Vector3.zero;
         currentSpeed = loveSpeed;
         currentRotationSpeed = 0;
 
-        if (Vector3.Distance(transform.position,targetDude.transform.position) < danceDistance && this.love >=50 && targetDudeController.love >=50)
+        if (Vector3.Distance(transform.position, friendAreaCenter) < danceDistance)
         {
             this.PlayerState = STATE.DANCING;
             animator.SetTrigger("hiphop");
         }
     }
 
+    private void Dance()
+    {
+        // IF YOU LOSE YOUR DANCING PARTNER - EXIT
+        // IF AN ENEMY ENTERS - RUN AWAY
+        if (Vector3.Distance(transform.position, friendAreaCenter) > danceDistance)
+        {
+            ReturnToWandering();
+        }
+    }
+
     private void Attack()
     {
-        Debug.Log(this.name + " IN FIGHT STATE " + targetDudeController.name);
         transform.LookAt(targetDude.transform);
         rb.angularVelocity = Vector3.zero;
         rb.AddRelativeForce(Vector3.forward * .2f, ForceMode.Impulse);
@@ -232,44 +231,33 @@ public class DudeController : MonoBehaviour
         // fight until something happens
     }
 
-    private void Dance()
-    {
-        // IF YOU LOSE YOUR DANCING PARTNER - EXIT
-        // IF AN ENEMY ENTERS - RUN AWAY
-        if (Vector3.Distance(transform.position, targetDude.transform.position) > danceDistance)
-        {
-            ReturnToWandering();
-        }
-    }
-
     private void Escape()
     {
-        transform.LookAt(transform.position - targetDude.transform.position);
         rb.angularVelocity = Vector3.zero;
+        currentSpeed = 0;
         currentRotationSpeed = 0;
-        currentSpeed = minSpeed;
+        currentSpeed = maxSpeed;
     }
 
     private void Die()
     {
-        transform.LookAt(transform.position - targetDude.transform.position);
+        /*transform.LookAt(transform.position - targetDude.transform.position);
         rb.angularVelocity = Vector3.zero;
         currentRotationSpeed = 0;
-        currentSpeed = minSpeed;
+        currentSpeed = minSpeed;*/
     }
 
-    private void UpdateLoveAttribute(int n, int totalLove)
+    private void UpdateLoveAttribute(int n)
     {
-        if (totalLove / n < 50) this.love--;
-        else this.love++;
-        Mathf.Clamp(this.love, 0, 100);
+        this.love += n;
+        this.love = Mathf.Clamp(this.love, 0, 100);
     }
 
     private void ReturnToWandering()
     {
         this.PlayerState = STATE.WANDERING;
-        if (this.love < 50) animator.SetTrigger("walking");
-        if (this.love >= 50) animator.SetTrigger("happywalk");
+        if (this.love < maxLove * .5f) animator.SetTrigger("walking");
+        if (this.love >= maxLove * .5f) animator.SetTrigger("happywalk");
     }
 
 }
